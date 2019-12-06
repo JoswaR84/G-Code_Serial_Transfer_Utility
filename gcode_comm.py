@@ -120,7 +120,7 @@ class Config(Page):
         self.parity_var.set(self.PARITY_OPTIONS[1])
         OptionMenu(self, self.parity_var, *self.PARITY_OPTIONS).grid(column=1, row=4, sticky=W+E)
         print(self.parity_var.get())
-G-Code File Transfer
+        
         Label(self, text='Stop Bits').grid(row=5, sticky=W)
         self.STOP_BITS_OPTIONS = ['1', '1.5', '2']
         self.stop_bits_var = StringVar(self)
