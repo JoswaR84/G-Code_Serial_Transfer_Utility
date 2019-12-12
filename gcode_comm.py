@@ -15,7 +15,7 @@ import os
 class MainView(Frame):
     def __init__(self, *args, **kwargs):
         Frame.__init__(self, *args, **kwargs)
-        # Instantiate
+        # Instantiate Other Class Pages
         self.upload_page = Upload(self)        
         self.password_page = Password(self)        
         self.config_page = Config(self)
@@ -83,7 +83,7 @@ class NoCable(Page):
         Label(self, text='No Connection is Detected!').pack(pady=(100, 0))
         
     def check_cable(self):        
-        if os.path.exists('/dev/ttyUSB0'):            
+        if os.path.exists('/dev/ttyUSB0'):
             self.lower()
             main.keyboard_button.config(state='normal')
             main.upload_button.config(state='normal')
@@ -94,29 +94,28 @@ class NoCable(Page):
             main.upload_button.config(state='disabled')
             main.config_button.config(state='disabled')
             
-
 class Password(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         self.name = 'password'
-        
+
         # Password GUI
         Label(self, text='Enter Password').pack(fill='x', padx=10, pady=(60, 0))
         self.password = Entry(self, show="*")
         self.password.pack(fill='x', padx=10, pady=5)
-        Button(self, text="Submit", command=self.check_password).pack(side= TOP, fill='x', padx=10)        
-        
+        Button(self, text="Submit", command=self.check_password).pack(side= TOP, fill='x', padx=10)
+
     def check_password(self):
         '''Check Password and Return Config'''
         if self.password.get() == pw_set:
             global pw_check
-            pw_check = self.password.get()            
+            pw_check = self.password.get()
             main.config_page.lift()
         else:
             self.pw_notice = Label(main.password_page, text='Password Incorrect', fg='red')
             self.pw_notice.place(x=238, y=35)
             self.pw_notice.after(3000, self.clear_pw_notice)
-            
+
     def clear_pw_notice(self):
         self.pw_notice.destroy()
         self.password.delete(0, END)
@@ -124,16 +123,16 @@ class Password(Page):
 class Upload(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        self.name = 'upload'        
+        self.name = 'upload'
         self.usb_files_list = []
         self.usb_files_path_list = []
-                
+
         # Upload GUI
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
         self.grid_columnconfigure(3, weight=1)
-        
+
         # First Column
         Label(self, text='Select for Upload').grid(columnspan=3, row=0, padx=(10, 0), pady=(15, 0), sticky=S)
         self.search = Entry(self)
@@ -143,7 +142,7 @@ class Upload(Page):
         ## Third Column for Button Only
         Button(self, text='Clear', command=self.set_reset_uploads).grid(column=2, row=1, sticky=W+E)
         # Back to First Column
-        self.listbox = Listbox(self, selectmode=MULTIPLE, yscrollcommand=True)        
+        self.listbox = Listbox(self, selectmode=MULTIPLE, yscrollcommand=True)
         self.listbox.grid(columnspan=3, row=2, padx=(10, 0), sticky=W+E+S+N)
         Button(self, text='Upload Files', command=self.upload_files).grid(columnspan=3, row=3, padx=(10, 0), sticky=W+E+S)
         # Fourth Column
@@ -155,17 +154,17 @@ class Upload(Page):
         self.clear_uploaded_buttton.grid(column=3, row=3, padx=(15, 10),sticky=W+E+S+N)
 
     def get_usb_files(self):
-        '''Query G-Code Files on USB'''    
+        '''Query G-Code Files on USB'''
         for dir_path, sub_dir, files in os.walk('/media/pi/'):
             for file in files:
                 if file not in self.usb_files_list and file.endswith(ext_list):
                     self.usb_files_list.append(file)
-                    self.usb_files_path_list.append(os.path.join(dir_path, file))                    
-                    
+                    self.usb_files_path_list.append(os.path.join(dir_path, file))
+
     def set_reset_uploads(self):
-        '''Set/Reset Upload Listbox'''        
+        '''Set/Reset Upload Listbox'''
         self.search.delete(0, END)
-        self.listbox.delete(0, END)        
+        self.listbox.delete(0, END)
         for file in self.usb_files_list:
             self.listbox.insert(END, file)
 
@@ -177,7 +176,7 @@ class Upload(Page):
         for item in search_items:
             if search(search_term, item, re.IGNORECASE):
                 self.listbox.insert(END, item)
-        
+
     def upload_files(self):
         '''Upload selected files'''
         try:
@@ -189,7 +188,7 @@ class Upload(Page):
         serial_conn = serial.Serial()
         serial_conn.port = '/dev/ttyUSB0'
         serial_conn.baudrate = main.config_page.baud_var.get()
-        serial_conn.bytesize = main.config_page.data_bits_var.get()            
+        serial_conn.bytesize = main.config_page.data_bits_var.get()
         if main.config_page.parity_var.get() == 'none':
             serial_conn.parity = 'N'
         if main.config_page.parity_var.get() == 'even':
@@ -206,13 +205,13 @@ class Upload(Page):
         serial_conn.dsrdtr = main.config_page.dsrdtr_var.get()
         serial_conn.open()
         # Upload files to Serial Device
-        if upload_files:                
+        if upload_files:
             for file in upload_files_list:
                 for path in self.usb_files_path_list:
-                    if file in path and file not in self.upload_box.get(0, END):                        
+                    if file in path and file not in self.upload_box.get(0, END):
                         self.upload_box.insert(END, file)
-                        read_file = open(path, 'rb').read()                        
-                        serial_conn.write(read_file)              
+                        read_file = open(path, 'rb').read()   
+                        serial_conn.write(read_file)
         # Close Serial Connection
         serial_conn.close()
 
@@ -224,7 +223,7 @@ class Config(Page):
         Page.__init__(self, *args, **kwargs)
         self.name = 'config'
         self.comm_port_list = []
-        
+
         # Load Vars from config.txt
         try:
             config_file = open(config_file_loc, 'r')
@@ -233,18 +232,18 @@ class Config(Page):
         except:
             config_vars = {'baud': 9600, 'bits': 7, 'parity': 'even',
                            'stop_bit': '1', 'flow': True, 'rts': True, 'dsr': True}
-        
+
         # Config GUI
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=10)
-            
+
         Label(self, text='Baud Rate').grid(row=2, padx=(10, 0), pady=(15, 0), sticky=W)
         self.BAUD_OPTIONS = [1200, 2400, 4800, 9600, 19200]
         self.baud_var = IntVar(self)
         config_baud = config_vars.get('baud')
         baud_indx = self.BAUD_OPTIONS.index(config_baud)
         self.baud_var.set(self.BAUD_OPTIONS[baud_indx])
-        OptionMenu(self, self.baud_var, *self.BAUD_OPTIONS).grid(column=1, row=2, padx=(0, 10), pady=(15, 0), sticky=W+E)        
+        OptionMenu(self, self.baud_var, *self.BAUD_OPTIONS).grid(column=1, row=2, padx=(0, 10), pady=(15, 0), sticky=W+E)
 
         Label(self, text='Data Bits').grid(row=3, padx=(10, 0), sticky=W)
         self.DATA_BITS_OPTIONS = [5, 6, 7, 8]
@@ -252,7 +251,7 @@ class Config(Page):
         config_bits = config_vars.get('bits')
         bits_indx = self.DATA_BITS_OPTIONS.index(config_bits)
         self.data_bits_var.set(self.DATA_BITS_OPTIONS[bits_indx])
-        OptionMenu(self, self.data_bits_var, *self.DATA_BITS_OPTIONS).grid(column=1, row=3, padx=(0, 10), sticky=W+E)        
+        OptionMenu(self, self.data_bits_var, *self.DATA_BITS_OPTIONS).grid(column=1, row=3, padx=(0, 10), sticky=W+E)
 
         Label(self, text='Parity').grid(row=4, padx=(10, 0), sticky=W)
         self.PARITY_OPTIONS = ['none', 'even', 'odd', 'mark', 'space']
@@ -260,7 +259,7 @@ class Config(Page):
         config_parity = config_vars.get('parity')
         parity_indx = self.PARITY_OPTIONS.index(config_parity)
         self.parity_var.set(self.PARITY_OPTIONS[parity_indx])
-        OptionMenu(self, self.parity_var, *self.PARITY_OPTIONS).grid(column=1, row=4, padx=(0, 10), sticky=W+E)        
+        OptionMenu(self, self.parity_var, *self.PARITY_OPTIONS).grid(column=1, row=4, padx=(0, 10), sticky=W+E)
 
         Label(self, text='Stop Bits').grid(row=5, padx=(10, 0), sticky=W)
         self.STOP_BITS_OPTIONS = ['1', '1.5', '2']
@@ -284,7 +283,7 @@ class Config(Page):
         config_dsr = config_vars.get('dsr')
         self.dsrdtr_var = StringVar(value=config_dsr)
         Checkbutton(self, variable=self.dsrdtr_var, onvalue=True, offvalue=False).grid(column=1, row=8, sticky=W)
-        
+
         Button(self, text='Save Config', command=self.save_config).grid(columnspan=2, row=9, padx=(10, 10),  sticky=S+W+E)
         
     def save_config(self):
@@ -309,6 +308,6 @@ if __name__ == '__main__':
     main = MainView(root)
     main.pack(fill='both', expand=True)
     main.after(0, main.status_polling)
-    root.title('CommCraft')    
-    root.geometry('600x320')    
+    root.title('CommCraft')
+    root.geometry('600x320')
     root.mainloop()
