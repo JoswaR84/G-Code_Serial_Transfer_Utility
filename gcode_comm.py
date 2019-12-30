@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Installed Modules & Software
-# python -m pip install pyserial
-# sudo apt install matchbox-keyboard
 
 from comm_vars import *
 from tkinter import *
@@ -47,8 +44,7 @@ class MainView(Frame):
         subprocess.Popen("matchbox-keyboard", shell=False)
 
     def status_polling(self):            
-        '''Check cable status, USB status, and Update self.config_page.usb_files_list'''
-        print('loop')
+        '''Check cable status, USB status, and Update self.config_page.usb_files_list'''        
         main.upload_page.get_usb_files()        
         if not main.upload_page.search.get() and not main.upload_page.listbox.curselection():
             main.upload_page.set_reset_uploads()
@@ -103,7 +99,9 @@ class Password(Page):
         Label(self, text='Enter Password').pack(fill='x', padx=10, pady=(60, 0))
         self.password = Entry(self, show="*")
         self.password.pack(fill='x', padx=10, pady=5)
-        Button(self, text="Submit", command=self.check_password).pack(side= TOP, fill='x', padx=10)
+        self.submit_button = Button(self, text="Submit", command=self.check_password)
+        self.submit_button.bind('<Return>', self.check_password)
+        self.submit_button.pack(side= TOP, fill='x', padx=10)
 
     def check_password(self):
         '''Check Password and Return Config'''
