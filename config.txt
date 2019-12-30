@@ -1,0 +1,1 @@
+{"stop_bit": "1", "rts": "1", "baud": 9600, "dsr": "1", "bits": 7, "flow": "1", "parity": "none"}
